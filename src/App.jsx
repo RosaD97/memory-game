@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import Card from './components/Card';
+import Victory from './components/Victory';
 
 const cardImages = [
   { "src": "/img/helmet-1.png", matched: false },
@@ -19,6 +20,11 @@ function App() {
   const [primaScelta, setPrimaScelta] = useState(null);
   const [secondaScelta, setSecondaScelta] = useState(null);
   const [disabled, setDisabled] = useState(false)
+  // btn inizia
+  const [start, setStart] = useState(false)
+  // vittoria
+  const [arrayCarteVinte, setArrayCarteVinte] = useState([])
+
 
   // random e duplica cards
   const shuffleCards = () => {
@@ -26,6 +32,7 @@ function App() {
       .sort(() => Math.random() - 0.5)
       .map((card) => ({ ...card, id: Math.random() }));
 
+    setStart(true)
     setCards(shuffleCards)
     setTurns(0)
 
@@ -41,6 +48,8 @@ function App() {
     if (primaScelta && secondaScelta) {
       setDisabled(true)
       if (primaScelta.src === secondaScelta.src) {
+        aggiungiCartaVinta()
+
         setCards(prevCards => {
           return prevCards.map(card => {
             if (card.src === primaScelta.src) {
@@ -60,6 +69,16 @@ function App() {
 
   }, [primaScelta, secondaScelta])
 
+  const aggiungiCartaVinta = () => {
+    setArrayCarteVinte((prevArray) => {
+      const newArray = [...prevArray, primaScelta];
+      if (newArray.length === 6) {
+        console.log('vittoria')
+      }
+      return newArray;
+    })
+  }
+
   // reset scelte + turno incrementato
   const resetTurn = () => {
     setPrimaScelta(null)
@@ -70,28 +89,48 @@ function App() {
 
   // Start new game
   useEffect(() => {
-    
-  }, [])
 
+  }, [])
 
   return (
     <div className='App'>
       <h1>Match game</h1>
-      <button onClick={shuffleCards}>Gioca</button>
-      {/* cards */}
-      <div className='card-grid'>
-        {cards.map(card => (
-          <Card
-            key={card.id}
-            card={card}
-            scelta={scelta}
-            flipped={card === primaScelta || card === secondaScelta || card.matched}
-            disabled={disabled}
-          />
-        ))}
+      {start === false ?
+        <button className='btn_start' onClick={shuffleCards}>Inizia</button>
+        :
+        <button className='btn_new' onClick={shuffleCards}>Nuova partita</button>
+      }
 
+      {/* cards */}
+      <div className='main'>
+        <div className='card-grid'>
+          {cards.map(card => (
+            <Card
+              key={card.id}
+              card={card}
+              scelta={scelta}
+              flipped={card === primaScelta || card === secondaScelta || card.matched}
+              disabled={disabled}
+            />
+          ))}
+        </div>
+        {/* Vittoria comp */}
+        <div> 
+          {arrayCarteVinte.length === 6 ?
+            <Victory />
+            :
+            ''
+          }
+
+        </div>
       </div>
-      <p>Turno: {turns}</p>
+
+
+      {turns > 0 ?
+        <p className='turno'>Turno: {turns}</p>
+        :
+        ""
+      }
     </div>
   )
 }
